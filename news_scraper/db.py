@@ -1,5 +1,6 @@
 import sqlite3
 import logging
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -118,4 +119,26 @@ def get_article_count(source=None):
     count = cursor.fetchone()[0]
     conn.close()
 
+    return count
+
+
+def cleanup_old_articles(days=3):
+    """
+    Delete articles older than specified days.
+    Returns the number of deleted articles.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    cutoff_str = cutoff.isoformat()
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM articles WHERE scraped_at < ?", (cutoff_str,))
+    count = cursor.fetchone()[0]
+
+    cursor.execute("DELETE FROM articles WHERE scraped_at < ?", (cutoff_str,))
+    conn.commit()
+    conn.close()
+
+    logger.info(f"Cleanup: deleted {count} articles older than {days} days")
     return count

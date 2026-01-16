@@ -1,6 +1,6 @@
 # News Scraper
 
-Collects headlines, URLs, and timestamps from BBC and AP News. Stores articles in SQLite for later analysis.
+Collects headlines, URLs, and timestamps from BBC, AP News, and Google News. Stores articles in SQLite for later analysis.
 
 ## Setup
 
@@ -31,6 +31,19 @@ python3 scraper.py --recent
 python3 scraper.py --recent --limit 50
 ```
 
+Clean up old articles:
+
+```bash
+# Delete articles older than 3 days (default)
+python3 scraper.py --cleanup
+
+# Delete articles older than 1 day
+python3 scraper.py --cleanup --days 1
+
+# Delete articles older than 7 days
+python3 scraper.py --cleanup --days 7
+```
+
 ## Automated Scraping (cron)
 
 ### Mac
@@ -41,10 +54,11 @@ Edit your crontab:
 crontab -e
 ```
 
-Add this line to scrape every 10 minutes:
+Add these lines to scrape every 10 minutes and clean up daily at midnight:
 
 ```
 */10 * * * * cd /path/to/news-scraper/news_scraper && /path/to/news-scraper/venv/bin/python3 scraper.py >> /path/to/news-scraper/scrape.log 2>&1
+0 0 * * * cd /path/to/news-scraper/news_scraper && /path/to/news-scraper/venv/bin/python3 scraper.py --cleanup >> /path/to/news-scraper/scrape.log 2>&1
 ```
 
 Replace `/path/to/news-scraper` with your actual path.
@@ -69,6 +83,7 @@ Replace `/path/to/news-scraper` with your actual path.
    Add:
    ```
    */10 * * * * cd /home/user/news-scraper/news_scraper && /home/user/news-scraper/venv/bin/python3 scraper.py >> /home/user/news-scraper/scrape.log 2>&1
+   0 0 * * * cd /home/user/news-scraper/news_scraper && /home/user/news-scraper/venv/bin/python3 scraper.py --cleanup >> /home/user/news-scraper/scrape.log 2>&1
    ```
 
 4. (Optional) Set up log rotation to prevent log file growth:
@@ -92,7 +107,7 @@ Articles are stored in `articles.db` (SQLite) in the project root.
 
 Schema:
 - `id` - Auto-incrementing primary key
-- `source` - News source (bbc, ap)
+- `source` - News source (bbc, ap, google_news)
 - `url` - Article URL (unique constraint prevents duplicates)
 - `title` - Headline text
 - `published_at` - Publication timestamp (if available)
@@ -108,6 +123,7 @@ sqlite3 articles.db "SELECT * FROM articles ORDER BY scraped_at DESC LIMIT 10;"
 
 - **BBC News** - World, Business, Technology sections
 - **AP News** - Homepage, World, Business, Technology sections
+- **Google News** - World, US, Business, Technology, Sports topic feeds
 
 ## Notes
 

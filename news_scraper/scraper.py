@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-News Scraper - Collects headlines from BBC and AP News.
+News Scraper - Collects headlines from BBC, AP News, and Google News.
 
 Usage:
     python scraper.py           # Run scraper
@@ -12,8 +12,8 @@ import logging
 import sys
 import time
 
-from db import init_db, insert_articles, get_recent_articles, get_article_count
-from sources import bbc, ap
+from db import init_db, insert_articles, get_recent_articles, get_article_count, cleanup_old_articles
+from sources import bbc, ap, google_news
 
 # Configure logging
 logging.basicConfig(
@@ -35,6 +35,7 @@ def run_scraper():
     sources = [
         ("BBC", bbc.scrape),
         ("AP", ap.scrape),
+        ("Google News", google_news.scrape),
     ]
 
     for name, scrape_fn in sources:
@@ -67,9 +68,10 @@ def run_scraper():
         print(f"Duplicates:      {skipped}")
 
     print(f"\nDatabase totals:")
-    print(f"  BBC:   {get_article_count('bbc')} articles")
-    print(f"  AP:    {get_article_count('ap')} articles")
-    print(f"  Total: {get_article_count()} articles")
+    print(f"  BBC:         {get_article_count('bbc')} articles")
+    print(f"  AP:          {get_article_count('ap')} articles")
+    print(f"  Google News: {get_article_count('google_news')} articles")
+    print(f"  Total:       {get_article_count()} articles")
     print("=" * 50)
 
 
@@ -92,7 +94,7 @@ def show_recent(limit=20):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="News Scraper - BBC and AP News")
+    parser = argparse.ArgumentParser(description="News Scraper - BBC, AP, and Google News")
     parser.add_argument(
         "--recent",
         action="store_true",
@@ -104,10 +106,26 @@ def main():
         default=20,
         help="Number of recent articles to show (default: 20)",
     )
+    parser.add_argument(
+        "--cleanup",
+        action="store_true",
+        help="Delete old articles from the database",
+    )
+    parser.add_argument(
+        "--days",
+        type=int,
+        default=3,
+        help="Delete articles older than this many days (default: 3)",
+    )
 
     args = parser.parse_args()
 
-    if args.recent:
+    if args.cleanup:
+        init_db()
+        deleted = cleanup_old_articles(days=args.days)
+        print(f"Deleted {deleted} articles older than {args.days} days")
+        print(f"Remaining: {get_article_count()} articles")
+    elif args.recent:
         init_db()
         show_recent(limit=args.limit)
     else:
