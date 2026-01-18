@@ -79,7 +79,7 @@ sudo chmod 600 /var/lib/news-scraper/.env
 ### 5. Test the scraper
 
 ```bash
-sudo -u app bash -c "source /var/lib/news-scraper/.env && /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py"
+sudo -u app /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py
 ```
 
 Verify the database was created:
@@ -99,11 +99,11 @@ sudo -u app crontab -e
 Add these lines:
 
 ```cron
-# Load environment and run news scraper every 10 minutes
-*/10 * * * * . /var/lib/news-scraper/.env && /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py >> /var/lib/news-scraper/scraper.log 2>&1
+# Run news scraper every 10 minutes
+*/10 * * * * /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py >> /var/lib/news-scraper/scraper.log 2>&1
 
 # Cleanup old articles daily at midnight
-0 0 * * * . /var/lib/news-scraper/.env && /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py --cleanup >> /var/lib/news-scraper/scraper.log 2>&1
+0 0 * * * /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py --cleanup >> /var/lib/news-scraper/scraper.log 2>&1
 ```
 
 ### 7. Set up log rotation
@@ -151,7 +151,7 @@ sqlite3 /var/lib/news-scraper/articles.db "SELECT source, COUNT(*) FROM articles
 When you add the correlation service to polymarket-scanner, chain it after news-scraper in cron:
 
 ```cron
-*/10 * * * * . /var/lib/news-scraper/.env && /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py >> /var/lib/news-scraper/scraper.log 2>&1 && /opt/polymarket-scanner/venv/bin/python3 /opt/polymarket-scanner/correlate.py >> /var/log/polymarket-scanner/correlate.log 2>&1
+*/10 * * * * /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py >> /var/lib/news-scraper/scraper.log 2>&1 && /opt/polymarket-scanner/venv/bin/python3 /opt/polymarket-scanner/correlate.py >> /var/log/polymarket-scanner/correlate.log 2>&1
 ```
 
 The correlation service can access both databases:
@@ -166,7 +166,7 @@ The correlation service can access both databases:
 grep CRON /var/log/syslog | tail -20
 
 # Run manually to see errors
-sudo -u app bash -c "source /var/lib/news-scraper/.env && /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py"
+sudo -u app /opt/news-scraper/venv/bin/python3 /opt/news-scraper/news_scraper/scraper.py
 ```
 
 **Permission denied?**

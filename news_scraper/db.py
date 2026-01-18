@@ -4,6 +4,14 @@ import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+# Load .env file from production location if it exists, otherwise check project root
+_prod_env = Path("/var/lib/news-scraper/.env")
+if _prod_env.exists():
+    load_dotenv(_prod_env)
+load_dotenv()  # Also check project root for local dev
+
 logger = logging.getLogger(__name__)
 
 # Database path: use NEWS_SCRAPER_DB_PATH env var, or default to project root
