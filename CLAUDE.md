@@ -38,7 +38,7 @@ This is a news headline scraper that collects articles from multiple sources and
 
 Each source module exports a `scrape()` function that returns a list of article dicts with keys: `source`, `url`, `title`, `published_at`, `scraped_at`.
 
-**Database**: `articles.db` in project root (not `news_scraper/`)
+**Database**: `articles.db` - location controlled by `NEWS_SCRAPER_DB_PATH` env var (defaults to project root)
 
 ## Adding New Sources
 
@@ -46,8 +46,13 @@ Each source module exports a `scrape()` function that returns a list of article 
 2. Import and add to `sources` list in `scraper.py`
 3. Update `get_article_count()` display in scraper summary
 
+## Deployment
+
+See `DEPLOYMENT.md` for DigitalOcean droplet deployment alongside polymarket-scanner.
+
 ## Notes
 
 - Reuters is blocked (JS challenge) - that's why we use BBC instead
 - Google News RSS returns redirect URLs, not direct article links
 - Always use `python3` not `python`
+- Set `NEWS_SCRAPER_DB_PATH` env var to customize database location (production uses `/var/lib/news-scraper/articles.db`)

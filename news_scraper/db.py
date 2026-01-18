@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import logging
 from datetime import datetime, timedelta, timezone
@@ -5,7 +6,9 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-DB_PATH = Path(__file__).parent.parent / "articles.db"
+# Database path: use NEWS_SCRAPER_DB_PATH env var, or default to project root
+_default_db_path = Path(__file__).parent.parent / "articles.db"
+DB_PATH = Path(os.environ.get("NEWS_SCRAPER_DB_PATH", _default_db_path))
 
 
 def get_connection():
